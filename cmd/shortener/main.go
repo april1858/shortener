@@ -17,6 +17,7 @@ func main() {
 
 	r.Post("/", app.CreateShort)
 	r.Get("/{id}", app.ReturnLong)
+	r.Post("/api/shorten", app.APIShorten)
 
 	log.Fatal(server.ListenAndServe())
 }

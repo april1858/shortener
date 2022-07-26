@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -50,4 +51,39 @@ func ReturnLong(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Location", long)
 		w.WriteHeader(307)
 	}
+}
+func APIShorten(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	long, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(500)
+		log.Fatalf("Internal Server Error %v", err)
+	}
+	//if r.Header.Get("Content-type") != "application/json" {
+	//	fmt.Println("Now only json!")
+	//	return
+	//}
+	in := map[string]string{}
+	if err := json.Unmarshal(long, &in); err != nil {
+		panic(err)
+	}
+	for _, ur := range in {
+		u, err := url.ParseRequestURI(ur)
+		if err != nil || u == nil {
+			w.WriteHeader(400)
+			w.Write([]byte("Не корректный URL"))
+		} else {
+			short := longToShort(ur)
+			out := map[string]string{"result": "http://localhost:8080/" + short}
+			s, err := json.Marshal(out)
+			if err != nil {
+				panic(err)
+			}
+			w.Header().Set("content-type", "application/json")
+			w.Header().Add("Accept", "application/json")
+			w.WriteHeader(201)
+			w.Write([]byte(string(s)))
+		}
+	}
+
 }
