@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 var db = make(map[string]string)
@@ -23,6 +24,10 @@ func longToShort(long string) string {
 }
 
 func CreateShort(w http.ResponseWriter, r *http.Request) {
+	addr := os.Getenv("SERVER_ADDRESS")
+	if addr == "" {
+		addr = "localhost:8080"
+	}
 	defer r.Body.Close()
 	long, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -36,7 +41,7 @@ func CreateShort(w http.ResponseWriter, r *http.Request) {
 	} else {
 		short := longToShort(string(long))
 		w.WriteHeader(201)
-		w.Write([]byte("http://localhost:8080/" + short))
+		w.Write([]byte("http://" + addr + "/" + short))
 	}
 
 }
@@ -53,6 +58,10 @@ func ReturnLong(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func APIShorten(w http.ResponseWriter, r *http.Request) {
+	addr := os.Getenv("SERVER_ADDRESS")
+	if addr == "" {
+		addr = "localhost:8080"
+	}
 	defer r.Body.Close()
 	long, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -74,7 +83,7 @@ func APIShorten(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("Не корректный URL"))
 		} else {
 			short := longToShort(ur)
-			out := map[string]string{"result": "http://localhost:8080/" + short}
+			out := map[string]string{"result": "http://" + addr + "/" + short}
 			s, err := json.Marshal(out)
 			if err != nil {
 				panic(err)
