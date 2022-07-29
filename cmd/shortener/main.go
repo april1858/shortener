@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +18,9 @@ func main() {
 	if bURL != "" {
 		bURL = ""
 	}
-	fmt.Println(bURL)
+	if fsp := os.Getenv("FILE_STORAGE_PATH"); fsp != "" {
+		app.WriteInDB(fsp)
+	}
 	r := chi.NewRouter()
 	server := &http.Server{
 		Addr:    addr,

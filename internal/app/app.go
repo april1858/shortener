@@ -13,13 +13,48 @@ import (
 
 var db = make(map[string]string)
 
+func WriteInDB(p string) {
+	file, err := os.OpenFile(p, os.O_RDONLY|os.O_CREATE, 0777)
+	if err != nil {
+		log.Fatal(err)
+	}
+	data, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Попытка чтения: %v\n", err)
+	}
+	err1 := json.Unmarshal(data, &db)
+	if err != nil {
+		log.Fatal(err1)
+	}
+}
+
 func longToShort(long string) string {
+	fmt.Println(db)
 	b := make([]byte, 4)
 	rand.Read(b)
 	s := fmt.Sprintf("%x", b)
 	short := s
 	lg := string(long)
 	db[short] = lg
+	filePath := os.Getenv("FILE_STORAGE_PATH")
+	if filePath != "" {
+		filename := filePath
+		file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0777)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		data, err := json.Marshal(&db)
+		if err != nil {
+			fmt.Println(err)
+		}
+		// добавляем перенос строки
+		data = append(data, '\n')
+		_, err = file.Write(data)
+		if err != nil {
+			fmt.Println("1")
+		}
+	}
 	return short
 }
 
